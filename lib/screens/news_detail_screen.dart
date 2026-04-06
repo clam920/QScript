@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/ai_service.dart';
+import '../models/stock_note.dart';
+import '../providers/notes_provider.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final dynamic article;
+  final String ticker;
 
-  const NewsDetailScreen({super.key, required this.article});
+  const NewsDetailScreen({super.key, required this.article, required this.ticker});
 
   @override
   State<NewsDetailScreen> createState() => _NewsDetailScreenState();
@@ -16,6 +20,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   final AIService _aiService = AIService();
   Map<String, dynamic>? _aiAnalysis;
   bool _isAnalyzing = false;
+  bool _isSaving = false;
 
   Future<void> _getAIAnalysis() async {
     setState(() => _isAnalyzing = true);
@@ -45,6 +50,44 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
           SnackBar(content: Text('Error: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _saveToNotes() async {
+    if (_aiAnalysis == null) return;
+
+    setState(() => _isSaving = true);
+
+    final sentiment = _aiAnalysis!['sentiment'] as String? ?? 'Neutral';
+    final reasoning = _aiAnalysis!['ai_reasoning'] as String? ?? '';
+    final headline = widget.article['headline'] ?? 'Stock News';
+
+    final note = StockNote(
+      ticker: widget.ticker,
+      title: 'AI Analysis: $headline',
+      content: 'Sentiment: $sentiment\n\n$reasoning',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    try {
+      await context.read<NotesProvider>().createNote(note);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Saved to your research notes!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save note: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -242,13 +285,23 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
               reasoning ?? 'No reasoning provided.',
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => setState(() => _aiAnalysis = null),
-                child: const Text('Refresh Analysis'),
-              ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: _isSaving ? null : _saveToNotes,
+                  icon: _isSaving 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.bookmark_add_outlined),
+                  label: const Text('Save to Notes'),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () => setState(() => _aiAnalysis = null),
+                  child: const Text('Refresh'),
+                ),
+              ],
             ),
           ],
         ),

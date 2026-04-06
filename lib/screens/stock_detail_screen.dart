@@ -259,7 +259,10 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => NewsDetailScreen(article: article),
+                        builder: (context) => NewsDetailScreen(
+                          article: article,
+                          ticker: widget.ticker,
+                        ),
                       ),
                     );
                   },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/stock_quote.dart';
 import '../models/stock_profile.dart';
 import '../models/stock_note.dart';
@@ -11,6 +10,7 @@ import '../services/finnhub_service.dart';
 import '../providers/watchlist_provider.dart';
 import '../providers/notes_provider.dart';
 import 'note_editor_screen.dart';
+import 'news_detail_screen.dart';
 
 class StockDetailScreen extends StatefulWidget {
   final String ticker;
@@ -51,7 +51,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
   }
 
   void _handleTabChange() {
-    // Rebuild to update FAB visibility when tab changes
     setState(() {});
     
     if (_tabController.index == 1 && _news.isEmpty) {
@@ -131,7 +130,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Price Header
             Container(
               width: double.infinity,
               color: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -139,62 +137,31 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    _quote!.name,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text(_quote!.name, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 8),
-                  Text(
-                    '\$${_quote!.price.toStringAsFixed(2)}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  Text('\$${_quote!.price.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(
-                        _quote!.change >= 0
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color: _quote!.change >= 0
-                            ? Colors.green
-                            : Colors.red,
-                        size: 16,
-                      ),
+                      Icon(_quote!.change >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                          color: _quote!.change >= 0 ? Colors.green : Colors.red, size: 16),
                       const SizedBox(width: 4),
-                      Text(
-                        '${_quote!.change >= 0 ? '+' : ''}${_quote!.change.toStringAsFixed(2)} (${_quote!.changePercent.toStringAsFixed(2)}%)',
-                        style: TextStyle(
-                          color: _quote!.change >= 0
-                              ? Colors.green
-                              : Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text('${_quote!.change >= 0 ? '+' : ''}${_quote!.change.toStringAsFixed(2)} (${_quote!.changePercent.toStringAsFixed(2)}%)',
+                          style: TextStyle(color: _quote!.change >= 0 ? Colors.green : Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
                 ],
               ),
             ),
-
-            // Chart
             _buildPriceChart(),
-
             const Divider(),
-
-            // Key Statistics
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Key Statistics',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text('Key Statistics', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 16),
                   _buildStatRow('Market Cap', _formatMarketCap(_quote!.marketCap)),
                   _buildStatRow('Volume', _formatNumber(_quote!.volume)),
@@ -203,8 +170,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                 ],
               ),
             ),
-
-            // Company Profile
             if (_profile != null) ...[
               const Divider(),
               Padding(
@@ -212,10 +177,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'About ${_profile!.companyName}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+                    Text('About ${_profile!.companyName}', style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
                     if (_profile!.sector != null) Text('Sector: ${_profile!.sector}'),
                     if (_profile!.industry != null) Text('Industry: ${_profile!.industry}'),
@@ -225,7 +187,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                 ),
               ),
             ],
-            const SizedBox(height: 80), // Space for FAB
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -271,55 +233,35 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
                 final article = _news[index];
-                final date = DateTime.fromMillisecondsSinceEpoch(
-                    (article['datetime'] as int) * 1000);
+                final date = DateTime.fromMillisecondsSinceEpoch((article['datetime'] as int) * 1000);
 
                 return ListTile(
-                  title: Text(
-                    article['headline'] ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  title: Text(article['headline'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text(
-                        article['summary'] ?? '',
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(article['summary'] ?? '', maxLines: 3, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            article['source'] ?? '',
-                            style: TextStyle(
-                                color: Colors.blue[700],
-                                fontWeight: FontWeight.w500),
-                          ),
+                          Text(article['source'] ?? '', style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w500)),
                           Text(DateFormat('MMM d, y').format(date)),
                         ],
                       ),
                     ],
                   ),
-                  trailing: article['image'] != null &&
-                      (article['image'] as String).isNotEmpty
-                      ? Image.network(
-                    article['image'],
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => const Icon(Icons.newspaper),
-                  )
+                  trailing: article['image'] != null && (article['image'] as String).isNotEmpty
+                      ? Image.network(article['image'], width: 60, height: 60, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.newspaper))
                       : null,
-                  onTap: () async {
-                    final url = Uri.parse(article['url'] ?? '');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url);
-                    }
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NewsDetailScreen(article: article),
+                      ),
+                    );
                   },
                 );
               },
@@ -333,10 +275,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
   Widget _buildNotesTab() {
     return Consumer<NotesProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
+        if (provider.isLoading) return const Center(child: CircularProgressIndicator());
         if (provider.notes.isEmpty) {
           return Center(
             child: Column(
@@ -345,15 +284,11 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                 const Icon(Icons.note_add, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
                 const Text('No notes for this stock yet'),
-                ElevatedButton(
-                  onPressed: () => _addNote(),
-                  child: const Text('Add your first note'),
-                ),
+                ElevatedButton(onPressed: () => _addNote(), child: const Text('Add your first note')),
               ],
             ),
           );
         }
-
         return RefreshIndicator(
           onRefresh: () => provider.loadNotesByTicker(widget.ticker),
           child: ListView.builder(
@@ -370,17 +305,11 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                       const SizedBox(height: 4),
                       Text(note.content, maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text(
-                        'Updated: ${DateFormat('MMM d, y HH:mm').format(note.updatedAt)}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
+                      Text('Updated: ${DateFormat('MMM d, y HH:mm').format(note.updatedAt)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
                   onTap: () => _editNote(note),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteNote(note.id!),
-                  ),
+                  trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteNote(note.id!)),
                 ),
               );
             },
@@ -391,21 +320,13 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
   }
 
   void _addNote() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => NoteEditorScreen(ticker: widget.ticker),
-      ),
-    ).then((_) => context.read<NotesProvider>().loadNotesByTicker(widget.ticker));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => NoteEditorScreen(ticker: widget.ticker)))
+        .then((_) => context.read<NotesProvider>().loadNotesByTicker(widget.ticker));
   }
 
   void _editNote(StockNote note) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => NoteEditorScreen(ticker: widget.ticker, note: note),
-      ),
-    ).then((_) => context.read<NotesProvider>().loadNotesByTicker(widget.ticker));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => NoteEditorScreen(ticker: widget.ticker, note: note)))
+        .then((_) => context.read<NotesProvider>().loadNotesByTicker(widget.ticker));
   }
 
   void _deleteNote(int id) {
@@ -416,37 +337,17 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
         content: const Text('Are you sure you want to delete this note?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              context.read<NotesProvider>().deleteNote(id);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () { context.read<NotesProvider>().deleteNote(id); Navigator.pop(context); }, child: const Text('Delete', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
   }
 
   Widget _buildPriceChart() {
-    if (_historicalData.isEmpty) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: Text('No chart data available')),
-      );
-    }
-
-    final spots = _historicalData.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value['close']);
-    }).toList();
-
-    final minY = _historicalData
-        .map((e) => e['close'] as double)
-        .reduce((a, b) => a < b ? a : b);
-    final maxY = _historicalData
-        .map((e) => e['close'] as double)
-        .reduce((a, b) => a > b ? a : b);
-
+    if (_historicalData.isEmpty) return const SizedBox(height: 200, child: Center(child: Text('No chart data available')));
+    final spots = _historicalData.asMap().entries.map((entry) => FlSpot(entry.key.toDouble(), entry.value['close'])).toList();
+    final minY = _historicalData.map((e) => e['close'] as double).reduce((a, b) => a < b ? a : b);
+    final maxY = _historicalData.map((e) => e['close'] as double).reduce((a, b) => a > b ? a : b);
     return SizedBox(
       height: 250,
       child: Padding(
@@ -454,97 +355,31 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${_historicalData.length} Day Price Chart',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
+            Text('${_historicalData.length} Day Price Chart', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
             const SizedBox(height: 8),
             Expanded(
               child: LineChart(
                 LineChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    horizontalInterval: (maxY - minY) / 4,
-                  ),
+                  gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: (maxY - minY) / 4),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 45,
-                        getTitlesWidget: (value, meta) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Text(
-                              '\$${value.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        interval: (_historicalData.length / 4).ceilToDouble(),
-                        getTitlesWidget: (value, meta) {
-                          if (value < 0 || value >= _historicalData.length) {
-                            return const SizedBox.shrink();
-                          }
-
-                          final index = value.toInt();
-                          final date = _historicalData[index]['date'] as String;
-
-                          try {
-                            final dateParts = date.split('-');
-                            if (dateParts.length == 3) {
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  '${dateParts[1]}/${dateParts[2]}',
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            return const SizedBox.shrink();
-                          }
-
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 45, getTitlesWidget: (value, meta) => Padding(padding: const EdgeInsets.only(right: 8.0), child: Text('\$${value.toStringAsFixed(0)}', style: const TextStyle(fontSize: 10))))),
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, interval: (_historicalData.length / 4).ceilToDouble(), getTitlesWidget: (value, meta) {
+                      if (value < 0 || value >= _historicalData.length) return const SizedBox.shrink();
+                      final index = value.toInt();
+                      final date = _historicalData[index]['date'] as String;
+                      try {
+                        final dateParts = date.split('-');
+                        if (dateParts.length == 3) return Padding(padding: const EdgeInsets.only(top: 8.0), child: Text('${dateParts[1]}/${dateParts[2]}', style: const TextStyle(fontSize: 10)));
+                      } catch (e) { return const SizedBox.shrink(); }
+                      return const SizedBox.shrink();
+                    })),
                     topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border(
-                      left: BorderSide(color: Colors.grey[300]!),
-                      bottom: BorderSide(color: Colors.grey[300]!),
-                    ),
-                  ),
+                  borderData: FlBorderData(show: true, border: Border(left: BorderSide(color: Colors.grey[300]!), bottom: BorderSide(color: Colors.grey[300]!))),
                   minY: minY * 0.99,
                   maxY: maxY * 1.01,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      color: _quote != null && _quote!.change >= 0 ? Colors.green : Colors.red,
-                      barWidth: 2,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: (_quote != null && _quote!.change >= 0 ? Colors.green : Colors.red)
-                            .withOpacity(0.1),
-                      ),
-                    ),
-                  ],
+                  lineBarsData: [LineChartBarData(spots: spots, isCurved: true, color: _quote != null && _quote!.change >= 0 ? Colors.green : Colors.red, barWidth: 2, dotData: FlDotData(show: false), belowBarData: BarAreaData(show: true, color: (_quote != null && _quote!.change >= 0 ? Colors.green : Colors.red).withOpacity(0.1)))],
                 ),
               ),
             ),
@@ -563,53 +398,21 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
           IconButton(
             icon: Icon(_isInWatchlist ? Icons.star : Icons.star_border),
             onPressed: () async {
-              if (_isInWatchlist) {
-                await context.read<WatchlistProvider>().removeStock(widget.ticker);
-              } else {
-                await context.read<WatchlistProvider>().addStock(widget.ticker);
-              }
+              if (_isInWatchlist) { await context.read<WatchlistProvider>().removeStock(widget.ticker); }
+              else { await context.read<WatchlistProvider>().addStock(widget.ticker); }
               await _loadData();
             },
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Info', icon: Icon(Icons.info_outline)),
-            Tab(text: 'News', icon: Icon(Icons.newspaper)),
-            Tab(text: 'Notes', icon: Icon(Icons.notes)),
-          ],
-        ),
+        bottom: TabBar(controller: _tabController, tabs: const [Tab(text: 'Info', icon: Icon(Icons.info_outline)), Tab(text: 'News', icon: Icon(Icons.newspaper)), Tab(text: 'Notes', icon: Icon(Icons.notes))]),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildInfoTab(),
-          _buildNewsTab(),
-          _buildNotesTab(),
-        ],
-      ),
-      floatingActionButton: _tabController.index == 2
-          ? FloatingActionButton(
-        onPressed: _addNote,
-        tooltip: 'Add Note',
-        child: const Icon(Icons.add),
-      )
-          : null,
+      body: TabBarView(controller: _tabController, children: [_buildInfoTab(), _buildNewsTab(), _buildNotesTab()]),
+      floatingActionButton: _tabController.index == 2 ? FloatingActionButton(onPressed: _addNote, tooltip: 'Add Note', child: const Icon(Icons.add)) : null,
     );
   }
 
   Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: const TextStyle(color: Colors.grey)), Text(value, style: const TextStyle(fontWeight: FontWeight.bold))]));
   }
 
   String _formatMarketCap(double? marketCap) {

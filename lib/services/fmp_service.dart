@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/stock_quote.dart';
 import '../models/stock_profile.dart';
 
-class ApiService {
+class FMPService {
   static String get _apiKey => dotenv.env['FMP_API_KEY'] ?? '';
   static const String _baseUrl = 'https://financialmodelingprep.com/stable';
 

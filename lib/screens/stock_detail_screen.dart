@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/stock_quote.dart';
 import '../models/stock_profile.dart';
-import '../services/api_service.dart';
+import '../services/fmp_service.dart';
 import '../providers/watchlist_provider.dart';
 import '../providers/notes_provider.dart';
 import 'notes_screen.dart';
@@ -20,7 +20,7 @@ class StockDetailScreen extends StatefulWidget {
 }
 
 class _StockDetailScreenState extends State<StockDetailScreen> {
-  final ApiService _apiService = ApiService();
+  final FMPService _fmpService = FMPService();
   StockQuote? _quote;
   StockProfile? _profile;
   List<Map<String, dynamic>> _historicalData = [];
@@ -46,8 +46,8 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
       quote = await provider.getQuoteForTicker(widget.ticker);
     }
 
-    final profile = await _apiService.getProfile(widget.ticker);
-    final historical = await _apiService.getHistoricalPrices(widget.ticker);
+    final profile = await _fmpService.getProfile(widget.ticker);
+    final historical = await _fmpService.getHistoricalPrices(widget.ticker);
     final inWatchlist = await provider.isInWatchlist(widget.ticker);
     final notesCount = await context
         .read<NotesProvider>()

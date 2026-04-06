@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import '../models/watchlist_item.dart';
 import '../models/stock_quote.dart';
 import '../services/watchlist_service.dart';
-import '../services/api_service.dart';
+import '../services/fmp_service.dart';
 
 // WatchlistProver is a very useful tool when we have a long watchlist
 // it calls notifyListeners to update UI to avoid manual setStates
 class WatchlistProvider extends ChangeNotifier {
   final WatchlistService _watchlistService = WatchlistService();
-  final ApiService _apiService = ApiService();
+  final FMPService _fmpService = FMPService();
 
   List<WatchlistItem> _watchlist = [];
   Map<String, StockQuote> _quotes = {};
@@ -51,7 +51,7 @@ class WatchlistProvider extends ChangeNotifier {
 
       // Call getQuote individually for each ticker (no batch API available)
       for (var ticker in tickers) {
-        final quote = await _apiService.getQuote(ticker);
+        final quote = await _fmpService.getQuote(ticker);
         if (quote != null) {
           _quotes[ticker] = quote;
           print('Added quote for $ticker: \$${quote.price}');
@@ -81,7 +81,7 @@ class WatchlistProvider extends ChangeNotifier {
 
     // Fetch it if not cached
     print('Fetching fresh quote for $ticker');
-    final quote = await _apiService.getQuote(ticker);
+    final quote = await _fmpService.getQuote(ticker);
     if (quote != null) {
       _quotes[ticker] = quote;
       notifyListeners();

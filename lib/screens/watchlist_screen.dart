@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/watchlist_provider.dart';
-import '../services/api_service.dart';
+import '../services/fmp_service.dart';
 import 'stock_detail_screen.dart';
 
 class WatchlistScreen extends StatefulWidget {
@@ -22,7 +22,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
 
   Future<void> _showAddStockDialog() async {
     final controller = TextEditingController();
-    final apiService = ApiService();
+    final fmpService = FMPService();
     List<Map<String, String>> searchResults = [];
 
     await showDialog(
@@ -42,7 +42,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                 textCapitalization: TextCapitalization.characters,
                 onChanged: (value) async {
                   if (value.length >= 2) {
-                    final results = await apiService.searchStocks(value);
+                    final results = await fmpService.searchStocks(value);
                     setState(() {
                       searchResults = results;
                     });

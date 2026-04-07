@@ -61,11 +61,12 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     final sentiment = _aiAnalysis!['sentiment'] as String? ?? 'Neutral';
     final reasoning = _aiAnalysis!['ai_reasoning'] as String? ?? '';
     final headline = widget.article['headline'] ?? 'Stock News';
+    final url = widget.article['url'] ?? '';
 
     final note = StockNote(
       ticker: widget.ticker,
       title: 'AI Analysis: $headline',
-      content: 'Sentiment: $sentiment\n\n$reasoning',
+      content: 'Sentiment: $sentiment\n\n$reasoning\n\nReference: $url',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

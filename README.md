@@ -1,16 +1,42 @@
-# my_term_project
+# QScript - Stock Research & Analysis
 
-A new Flutter project.
+QScript is a comprehensive stock research and note-taking application designed for investors who want to combine real-time market data with advanced AI-powered insights.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Real-time Market Data**: Track live stock quotes, price changes, and historical charts powered by the Financial Modeling Prep (FMP) API.
+- **Personalized Watchlist**: Manage a custom list of stocks you're interested in, with instant price updates.
+- **Multi-Tab Stock Details**: 
+  - **Info**: Comprehensive overview including market cap, volume, day high/low, and company profile.
+  - **News**: Stay updated with the latest company-specific news fetched from the Finnhub API.
+  - **Notes**: Organize your research with dedicated notes for each ticker.
+- **AI-Powered Sentiment Analysis**: 
+  - Integrated with a fine-tuned **FinBERT** model for financial sentiment prediction (Bearish/Neutral/Bullish).
+  - **Gemini 2.5** integration for deep reasoning and context-aware interpretation of news headlines and summaries.
+- **Research Library**: Save AI-generated insights directly to your notes, including sentiment labels, detailed reasoning, and reference links to original news articles.
 
-A few resources to get you started if this is your first Flutter project:
+## Tech Stack
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Frontend**: Flutter & Dart
+- **State Management**: Provider
+- **Local Storage**: SQFlite (for notes) & Shared Preferences (for watchlist)
+- **External APIs**: 
+  - Financial Modeling Prep (Market Data)
+  - Finnhub (News Data)
+  - Custom AI Service (FinBERT & Gemini)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+
+```text
+lib/
+├── models/          # Data models (StockQuote, Note, etc.)
+├── providers/       # State management (Watchlist, Notes)
+├── screens/         # UI Screens (Watchlist, Details, Editor)
+├── services/        # API and Database services
+└── main.dart        # App entry point
+assets/              # Images and static assets
+test/                # Unit and widget tests
+```
+
+---
+*Developed as a term project for stock market enthusiasts.*
